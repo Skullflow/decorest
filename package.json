@@ -1,0 +1,47 @@
+{
+  "name": "deest",
+  "version": "0.0.1",
+  "description": "A minimal framework on top of express to build organized restful api",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "class-transformer": "^0.2.0",
+    "class-validator": "^0.9.1",
+    "express": "^4.16.4",
+    "reflect-metadata": "^0.1.13",
+    "typedi": "^0.8.0",
+    "typeorm": "^0.2.16"
+  },
+  "devDependencies": {
+    "typescript": "^3.4.5",
+    "@types/express": "^4.16.1"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepare": "npm run build",
+    "prepack": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Skullflow/deest.git"
+  },
+  "keywords": [
+    "rest",
+    "restful",
+    "framework",
+    "decorators",
+    "typescript",
+    "express",
+    "web",
+    "server",
+    "api",
+    "backend"
+  ],
+  "author": "Skullflow",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Skullflow/deest/issues"
+  },
+  "homepage": "https://github.com/Skullflow/deest#readme"
+}
