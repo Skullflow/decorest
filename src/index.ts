@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 export * from './core';
 export * from './classes';
 export * from './decorators';

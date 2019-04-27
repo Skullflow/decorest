@@ -36,7 +36,7 @@ export class Server {
             return args.response;
         }
         if (paramMetadata.type === ActionParamType.BODY) {
-            return args.request.body;
+            return plainToClass(paramMetadata.paramType, args.request.body);
         }
         if (paramMetadata.type === ActionParamType.QUERY) {
             return plainToClass(paramMetadata.paramType, args.request.query);
@@ -47,7 +47,6 @@ export class Server {
         if (paramMetadata.type === ActionParamType.LANG) {
             return args.response.locals.lang;
         }
-
     }
 
     /*

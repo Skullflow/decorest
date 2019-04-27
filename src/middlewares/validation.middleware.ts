@@ -1,6 +1,6 @@
-import * as express from 'express';
+import * as express from "express";
 import { plainToClass } from "class-transformer";
-import { validate, ValidationError } from 'class-validator';
+import { validate, ValidationError } from "class-validator";
 import { ValidationException } from '../classes';
 import { ActionParamType } from "../utils/types";
 
@@ -10,21 +10,23 @@ const getResourceToValidate = (request: express.Request, resource: ActionParamTy
             return request.body;
         case ActionParamType.QUERY:
             return request.query;
-        /*case ActionParamType.PARAMS:
-            return request.params;*/
+        case ActionParamType.PARAMS:
+            return request.params;
         default:
             return request.body;
     }
 };
 
 export function validation<T>(type: any, requestParam: ActionParamType = ActionParamType.BODY): express.RequestHandler {
-    return (request, response, next) => {
+    return (request: express.Request, response: express.Response, next: express.NextFunction) => {
 
         const resourceToValidate = getResourceToValidate(request, requestParam) || {};
 
-        validate(plainToClass(type, resourceToValidate))
-            .then((errors: ValidationError[]) => {
+        const resource = plainToClass(type, resourceToValidate);
 
+        validate(resource, { whitelist: true})
+            .then((errors: ValidationError[]) => {
+                console.log(resource);
                 if (errors.length > 0) {
                     next(new ValidationException(errors));
                 } else {
