@@ -18,20 +18,18 @@ const getResourceToValidate = (request: express.Request, resource: ActionParamTy
 };
 
 export function validation<T>(type: any, requestParam: ActionParamType = ActionParamType.BODY): express.RequestHandler {
-    return (request: express.Request, response: express.Response, next: express.NextFunction) => {
+    return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
 
         const resourceToValidate = getResourceToValidate(request, requestParam) || {};
 
         const resource = plainToClass(type, resourceToValidate);
 
-        validate(resource, { whitelist: true})
-            .then((errors: ValidationError[]) => {
-                console.log(resource);
-                if (errors.length > 0) {
-                    next(new ValidationException(errors));
-                } else {
-                    next();
-                }
-            })
+        const errors = await validate(resource, { whitelist: true})
+
+        if (errors.length > 0) {
+            next(new ValidationException(errors));
+        }
+
+        next();
     }
 }

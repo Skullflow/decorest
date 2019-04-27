@@ -9,6 +9,8 @@ import { useContainer } from "./container";
 import { Container } from "typedi";
 import { plainToClass } from "class-transformer";
 import { Connection, createConnection, useContainer as ormUseContainer } from "typeorm";
+import { validate } from "class-validator";
+import { ValidationException } from '../classes';
 
 /*
  * Default server props
@@ -28,25 +30,41 @@ export class Server {
     /*
      * Inject decorated action parameter
      */
-    private static handleParameter(paramMetadata: ParamMetadata, args: ICallbackArgs): any {
-        if (paramMetadata.type === ActionParamType.REQUEST) {
+    private static async handleParameter({ type, paramType }: ParamMetadata, args: ICallbackArgs): Promise<any> {
+
+        if (type === ActionParamType.REQUEST) {
             return args.request;
         }
-        if (paramMetadata.type === ActionParamType.RESPONSE) {
+        if (type === ActionParamType.RESPONSE) {
             return args.response;
         }
-        if (paramMetadata.type === ActionParamType.BODY) {
-            return plainToClass(paramMetadata.paramType, args.request.body);
-        }
-        if (paramMetadata.type === ActionParamType.QUERY) {
-            return plainToClass(paramMetadata.paramType, args.request.query);
-        }
-        if (paramMetadata.type === ActionParamType.PARAMS) {
-            return plainToClass(paramMetadata.paramType, args.request.params);
-        }
-        if (paramMetadata.type === ActionParamType.LANG) {
+        if (type === ActionParamType.LANG) {
             return args.response.locals.lang;
         }
+
+        let param;
+
+        if (type === ActionParamType.BODY) {
+            param = args.request.body;
+        }
+        if (type === ActionParamType.QUERY) {
+            param = args.request.query;
+        }
+        if (type === ActionParamType.PARAMS) {
+            param = args.request.params;
+        }
+
+        if (param) {
+            const errors = await validate(plainToClass(paramType, param),{
+                whitelist: true
+            })
+
+            if (errors.length > 0) {
+                throw new ValidationException(errors)
+            }
+        }
+
+        return param;
     }
 
     /*
@@ -244,9 +262,13 @@ export class Server {
     private async executeAction(controllerInstance: any, actionMetadata: ActionMetadata, args: ICallbackArgs)
         : Promise<void> {
         // Prepare and sort parameters to inject on this route handler
-        const params = actionMetadata.params
+        let params = actionMetadata.params
             .sort((param1, param2) => param1.index - param2.index)
-            .map(param => Server.handleParameter(param, args));
+
+        const promises = params
+            .map(async (param) => Server.handleParameter(param, args));
+
+        params = await Promise.all(promises);
 
         try {
             // Call the action and return some results
