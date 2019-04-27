@@ -6,28 +6,26 @@ import { ActionMetadata, ControllerMetadata, ParamMetadata } from "../metadata";
 import { ICallbackArgs, IInitServerProps, IServerProps } from "../utils/interfaces";
 import { ActionParamType, MiddlewareHandler, RequestMethod } from "../utils/types";
 import { useContainer } from "./container";
-import { Container } from "typedi";
 import { plainToClass } from "class-transformer";
-import { Connection, createConnection, useContainer as ormUseContainer } from "typeorm";
 import { validate } from "class-validator";
+import { Container } from "typedi";
 import { ValidationException } from '../classes';
 
-/*
+/**
  * Default server props
  */
 const defaultServerProps: IServerProps = {
     port: "8080",
     validate: true,
     useTypeDi: true,
-    useTypeOrm: true,
 };
 
-/*
+/**
  * Class that handle server creation
  */
 export class Server {
 
-    /*
+    /**
      * Inject decorated action parameter
      */
     private static async handleParameter({ type, paramType }: ParamMetadata, args: ICallbackArgs): Promise<any> {
@@ -70,7 +68,7 @@ export class Server {
         return transformed;
     }
 
-    /*
+    /**
      * Once the action is called, handle results
      */
     private static handleResults(results: any, actionMetadata: ActionMetadata, args: ICallbackArgs): void {
@@ -80,8 +78,10 @@ export class Server {
             return args.next();
         }
 
-        // TODO: gestire tutti i casi in cui ritorna null o undefined ecc...
-        // TODO: Possibile caso: se results == undefined || null, ritorna status 404
+        // If results is undefined or null, throw not found exeption
+        if (results === undefined || results === null) {
+            throw new NotFoundException();
+        }
 
         // Send results and call middleware triggered after the action
         args.response.json(results);
@@ -101,10 +101,6 @@ export class Server {
             useContainer(Container);
         }
 
-        if (args.useTypeOrm) {
-            ormUseContainer(Container);
-        }
-
         this.port = args.port;
         this.app = express();
         this.validate = args.validate;
@@ -116,14 +112,7 @@ export class Server {
         return this.port;
     }
 
-    /*
-     * Connect to db
-     */
-    public async createDbConnection(): Promise<Connection> {
-        return await createConnection();
-    }
-
-    /*
+    /**
      * Register controllers, actions and middlewares
      */
     public init(args: IInitServerProps): void {
@@ -132,13 +121,13 @@ export class Server {
         this.initErrorHandlers(args.errorHandlers);
     }
 
-    /*
+    /**
      * Attach server to specific port
      */
     public async listen(cb: Function): Promise<void> {
         this.app.listen(this.port, () => cb());
     }
-    /*
+    /**
      *  Init global middlewares
      */
     private initMiddlewares(middlewares: any[] = []): void {
@@ -151,7 +140,7 @@ export class Server {
         });
     }
 
-    /*
+    /**
      * Init global handler
      */
     private initErrorHandlers(errorHandlers: any[] = []): void {
@@ -165,7 +154,7 @@ export class Server {
      *  BUILD WEB SERVER USING METADATA  *
      *************************************/
 
-    /*
+    /**
      * Build controller metadata and register actions
      */
     private initControllers(controllers: Function[]): void {
@@ -189,7 +178,7 @@ export class Server {
         });
     }
 
-    /*
+    /**
      * Configure express Router and set request handler callback
      */
     private registerAction(action: ActionMetadata, router: express.Router, cb: Function): void {
@@ -233,7 +222,7 @@ export class Server {
 
     }
 
-    /*
+    /**
      * Register middlewares for a specific action
      */
     private registerActionMiddlewares(action: ActionMetadata): Function[] {
@@ -244,7 +233,7 @@ export class Server {
         return middlewares;
     }
 
-    /*
+    /**
      * Predict action middlewares based on injected params
      */
     private injectPredictedActionMiddlewares(action: ActionMetadata): Function[] {
@@ -259,7 +248,7 @@ export class Server {
         return middlewares;
     }
 
-    /*
+    /**
      * Prepare and execute an action
      */
     private async executeAction(controllerInstance: any, actionMetadata: ActionMetadata, args: ICallbackArgs)
@@ -277,16 +266,9 @@ export class Server {
             // Call the action and return some results
             let results = await controllerInstance[actionMetadata.method].apply(controllerInstance, params);
 
-            console.log(results);
-            // If results is undefined or null, throw not found exeption
-            if (results === undefined || results === null) {
-                throw new NotFoundException();
-            }
-
             /**
              * Creates interceptors from the given "use interceptors"
              */
-            // Register interceptors
             for (const interceptorMetadata of actionMetadata.interceptors) {
                 results = await interceptorMetadata.interceptor(results, args.response);
             }

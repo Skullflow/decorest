@@ -4,7 +4,6 @@ export interface IServerProps {
     port: string;
     validate: boolean,
     useTypeDi: boolean,
-    useTypeOrm: boolean,
 }
 
 export interface IInitServerProps {
