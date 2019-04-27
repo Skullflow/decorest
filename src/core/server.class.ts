@@ -54,17 +54,20 @@ export class Server {
             param = args.request.params;
         }
 
-        if (param) {
-            const errors = await validate(plainToClass(paramType, param),{
-                whitelist: true
-            })
-
-            if (errors.length > 0) {
-                throw new ValidationException(errors)
-            }
+        if (!param) {
+            throw new Error('Could not find parameter to inject')
         }
 
-        return param;
+        const transformed = plainToClass(paramType, param);
+        const errors = await validate(transformed, {
+            whitelist: true
+        })
+
+        if (errors.length > 0) {
+            throw new ValidationException(errors)
+        }
+
+        return transformed;
     }
 
     /*
