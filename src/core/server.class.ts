@@ -39,6 +39,9 @@ export class Server {
         if (type === ActionParamType.LANG) {
             return args.response.locals.lang;
         }
+        if (type === ActionParamType.USER) {
+            return args.request.user;
+        }
 
         let param;
 
@@ -50,10 +53,6 @@ export class Server {
         }
         if (type === ActionParamType.PARAMS) {
             param = args.request.params;
-        }
-        if (type === ActionParamType.USER) {
-            if (!args.request.user) throw new Error('Request user is undefined')
-            param = args.request.user;
         }
 
         if (!param) {
