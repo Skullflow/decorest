@@ -1,4 +1,4 @@
-import { HttpException } from ".";
+import { HttpException } from "./httpException.class";
 
 export class NotFoundException extends HttpException {
 
