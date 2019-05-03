@@ -1,6 +1,6 @@
 {
   "name": "deest",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A minimal framework on top of express to build organized restful api",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
