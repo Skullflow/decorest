@@ -1,5 +1,9 @@
 import * as express from "express";
 
+interface IRequestWithUser extends express.Request {
+    user: any
+}
+
 export interface IServerProps {
     port: string;
     validate: boolean,
@@ -13,7 +17,7 @@ export interface IInitServerProps {
 }
 
 export interface ICallbackArgs {
-    request: express.Request,
+    request: IRequestWithUser,
     response: express.Response,
     next: express.NextFunction
 }

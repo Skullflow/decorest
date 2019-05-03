@@ -8,7 +8,7 @@ import { ActionParamType, MiddlewareHandler, RequestMethod } from "../utils/type
 import { useContainer } from "./container";
 import { plainToClass } from "class-transformer";
 import { validate } from "class-validator";
-import { Container } from "typedi";
+import { Container } from "typedi";
 import { ValidationException } from '../classes';
 
 /**
@@ -50,6 +50,10 @@ export class Server {
         }
         if (type === ActionParamType.PARAMS) {
             param = args.request.params;
+        }
+        if (type === ActionParamType.USER) {
+            if (!args.request.user) throw new Error('Request user is undefined')
+            param = args.request.user;
         }
 
         if (!param) {

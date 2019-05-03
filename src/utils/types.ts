@@ -1,6 +1,6 @@
 import * as express from "express";
 
-export type MiddlewareHandler = ((req:express.Request, res:express.Response, next: express.NextFunction) => any);
+export type MiddlewareHandler = ((req: express.Request, res: express.Response, next: express.NextFunction) => any);
 
 export enum ActionParamType {
     REQUEST = 'request',
@@ -9,6 +9,7 @@ export enum ActionParamType {
     QUERY = 'query',
     LANG = 'lang',
     PARAMS = 'params',
+    USER = 'user',
 }
 
 export enum RequestMethod {
