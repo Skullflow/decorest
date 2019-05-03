@@ -243,7 +243,14 @@ export class Server {
         const middlewares: MiddlewareHandler[] = [];
         action.params.forEach((param: ParamMetadata) => {
             if (this.validate) {
-                if (param.type === ActionParamType.BODY || param.type === ActionParamType.QUERY) {
+
+                const paramsToValidate = [
+                    ActionParamType.BODY,
+                    ActionParamType.QUERY,
+                    ActionParamType.PARAMS
+                ]
+
+                if (paramsToValidate.includes(param.type)) {
                     middlewares.push(validation(param.paramType, param.type));
                 }
             }
@@ -256,16 +263,18 @@ export class Server {
      */
     private async executeAction(controllerInstance: any, actionMetadata: ActionMetadata, args: ICallbackArgs)
         : Promise<void> {
-        // Prepare and sort parameters to inject on this route handler
-        let params = actionMetadata.params
-            .sort((param1, param2) => param1.index - param2.index)
-
-        const promises = params
-            .map(async (param) => Server.handleParameter(param, args));
-
-        params = await Promise.all(promises);
 
         try {
+
+            // Prepare and sort parameters to inject on this route handler
+            let params = actionMetadata.params
+                .sort((param1, param2) => param1.index - param2.index)
+
+            const promises = params
+                .map(async (param) => Server.handleParameter(param, args));
+
+            params = await Promise.all(promises);
+
             // Call the action and return some results
             let results = await controllerInstance[actionMetadata.method].apply(controllerInstance, params);
 
