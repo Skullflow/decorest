@@ -88,7 +88,7 @@ export class Server {
 
         // Send results and call middleware triggered after the action
         args.response.json(results);
-        args.next();
+        // args.next();
     }
 
     public app: express.Application;
