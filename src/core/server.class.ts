@@ -160,7 +160,7 @@ export class Server {
     /**
      * Build controller metadata and register actions
      */
-    private initControllers(controllers: Function[]): void {
+    private async initControllers(controllers: Function[]): Promise<void> {
         // Create controllers metadata
         this.controllers = this.metadataBuilder.createControllers(controllers);
         // For each controller metadata, register and execute defined actions
@@ -170,13 +170,15 @@ export class Server {
             console.log("Controller:", controller.instance);
             // For each controller, create an express Router
             const router = express.Router();
-            controller.actions.forEach(action => {
+
+            for (let action of controller.actions) {
                 // register every route handler inside controller
-                this.registerAction(action, router, (args: ICallbackArgs) => {
+                this.registerAction(action, router, async (args: ICallbackArgs) => {
                     // execute action logic when a route is being called
-                    const promise = this.executeAction(controller.instance, action, args);
+                    const promise = await this.executeAction(controller.instance, action, args);
                 });
-            });
+            };
+
             this.app.use(controller.route, router);
         });
     }
